@@ -1,0 +1,1174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#0b0d10" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f6f7f8" media="(prefers-color-scheme: light)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BreathOS">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="description" content="Offline-first breathing protocols and cycle analytics.">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
+<title>BreathOS — Breathing Protocols & Cycle Analytics</title>
+<style>
+:root{
+  --bg:#f6f7f8; --panel:#ffffff; --panel-2:#f0f2f4; --text:#111417; --muted:#66707a;
+  --line:#dfe4e8; --accent:#2563eb; --accent-2:#0f766e; --danger:#b42318; --ok:#137333;
+  --shadow:0 10px 30px rgba(16,24,40,.08); --radius:20px; --radius-sm:12px;
+  --orb:#79a7ff; --orb2:#b3cbff; --focus:#8ab4ff;
+  --safe-top:env(safe-area-inset-top); --safe-bottom:env(safe-area-inset-bottom);
+  font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+html[data-theme="dark"]{
+  --bg:#0b0d10; --panel:#12161b; --panel-2:#181e24; --text:#f3f5f7; --muted:#9ca6b0;
+  --line:#27313a; --accent:#7ba2ff; --accent-2:#5eead4; --danger:#ff8d86; --ok:#75d18a;
+  --shadow:0 14px 40px rgba(0,0,0,.25); --orb:#7ba2ff; --orb2:#375b9d; --focus:#b7c8ff;
+}
+@media (prefers-color-scheme:dark){
+  html[data-theme="system"]{
+    --bg:#0b0d10; --panel:#12161b; --panel-2:#181e24; --text:#f3f5f7; --muted:#9ca6b0;
+    --line:#27313a; --accent:#7ba2ff; --accent-2:#5eead4; --danger:#ff8d86; --ok:#75d18a;
+    --shadow:0 14px 40px rgba(0,0,0,.25); --orb:#7ba2ff; --orb2:#375b9d; --focus:#b7c8ff;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text)}
+body{padding:calc(12px + var(--safe-top)) 0 calc(84px + var(--safe-bottom))}
+button,input,select{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+button:disabled{opacity:.45;cursor:not-allowed}
+.app{max-width:1100px;margin:auto;padding:0 16px}
+header{display:flex;align-items:center;gap:12px;padding:10px 0 16px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:22px;letter-spacing:-.02em}
+.brand-mark{width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 40% 35%,var(--orb),var(--accent));box-shadow:0 0 0 7px color-mix(in srgb,var(--accent) 12%,transparent)}
+.spacer{flex:1}
+.icon-btn,.btn{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:12px;min-height:44px}
+.icon-btn{width:44px;display:grid;place-items:center}
+.btn{padding:10px 14px;font-weight:700}
+.btn.primary{background:var(--text);color:var(--bg);border-color:var(--text)}
+.btn.accent{background:var(--accent);color:white;border-color:var(--accent)}
+.btn.danger{color:var(--danger)}
+.btn.ghost{background:transparent}
+.view{display:none}.view.active{display:block}
+.hero{display:grid;grid-template-columns:1.4fr .9fr;gap:16px;margin-bottom:18px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.summary{padding:24px;display:flex;flex-direction:column;justify-content:space-between;min-height:180px}
+.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.12em;font-weight:800;color:var(--muted)}
+.big-stat{font-size:clamp(42px,8vw,76px);font-weight:850;line-height:.9;letter-spacing:-.055em;margin:14px 0 8px}
+.subtle{color:var(--muted)}
+.quick-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px}
+.kpi{background:var(--panel-2);border-radius:14px;padding:14px}
+.kpi .v{font-weight:800;font-size:20px;margin-top:6px}
+.section-head{display:flex;align-items:center;gap:10px;margin:24px 0 12px}
+.section-head h2{font-size:18px;margin:0}
+.controls{display:flex;gap:8px;flex-wrap:wrap}
+.search{flex:1;min-width:180px;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:12px;padding:11px 13px}
+select,input[type="number"],input[type="text"]{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:11px;padding:10px 11px;min-height:42px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px;min-height:190px;box-shadow:0 3px 14px rgba(16,24,40,.04)}
+.card-top{display:flex;align-items:flex-start;gap:8px}
+.card h3{margin:0;font-size:18px;line-height:1.2}
+.pattern{color:var(--muted);font-size:13px;min-height:36px}
+.card-kpis{display:flex;gap:18px;margin-top:auto}
+.card-kpis strong{display:block;font-size:19px}
+.card-kpis span{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.card-actions{display:flex;gap:8px}.card-actions .btn{flex:1}
+.star{border:0;background:transparent;color:var(--muted);font-size:20px;padding:0 3px;min-width:34px;min-height:34px}
+.star.on{color:#d4a017}
+.tag{font-size:11px;font-weight:800;padding:4px 7px;border-radius:999px;background:var(--panel-2);color:var(--muted)}
+.empty{padding:32px;text-align:center;color:var(--muted)}
+.history-list{display:flex;flex-direction:column;gap:10px}
+.history-row{display:grid;grid-template-columns:1.4fr .8fr .8fr .8fr;gap:12px;align-items:center;padding:14px 16px;background:var(--panel);border:1px solid var(--line);border-radius:14px}
+.history-row .name{font-weight:750}.history-row small{color:var(--muted)}
+.status{font-size:12px;font-weight:800}.status.good{color:var(--ok)}.status.warn{color:var(--muted)}
+.bottom-nav{position:fixed;z-index:20;left:50%;bottom:calc(12px + var(--safe-bottom));transform:translateX(-50%);display:flex;gap:4px;padding:6px;background:color-mix(in srgb,var(--panel) 93%,transparent);backdrop-filter:blur(18px);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+.nav-btn{border:0;background:transparent;color:var(--muted);border-radius:12px;padding:10px 14px;min-width:82px;font-weight:750}
+.nav-btn.active{background:var(--panel-2);color:var(--text)}
+dialog{width:min(720px,calc(100vw - 24px));max-height:min(88vh,900px);border:1px solid var(--line);border-radius:22px;background:var(--panel);color:var(--text);box-shadow:0 24px 80px rgba(0,0,0,.3);padding:0}
+dialog::backdrop{background:rgba(0,0,0,.48);backdrop-filter:blur(2px)}
+.modal-head{display:flex;gap:10px;align-items:center;padding:18px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.modal-head h2{font-size:19px;margin:0}.modal-body{padding:20px}.modal-foot{display:flex;justify-content:flex-end;gap:8px;padding:16px 20px;border-top:1px solid var(--line);position:sticky;bottom:0;background:var(--panel)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:12px;font-weight:800;color:var(--muted)}
+.phase-list{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.phase-row{display:grid;grid-template-columns:1fr 110px 44px 44px 44px;gap:8px;align-items:center}
+.phase-row .btn{padding:0}
+.inline-note{padding:12px 14px;border:1px solid var(--line);background:var(--panel-2);border-radius:12px;font-size:13px;color:var(--muted)}
+.warn-note{border-color:color-mix(in srgb,var(--danger) 35%,var(--line));color:var(--danger)}
+.setup-technique{display:flex;align-items:center;gap:12px;padding:14px;background:var(--panel-2);border-radius:14px;margin-bottom:16px}
+.segmented{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.segmented button{border:0;border-right:1px solid var(--line);background:var(--panel);color:var(--text);padding:11px}.segmented button:last-child{border-right:0}.segmented button.active{background:var(--text);color:var(--bg)}
+.target-pane{margin-top:14px}
+.practice-overlay{position:fixed;inset:0;z-index:100;background:var(--bg);display:none;overflow:auto}
+.practice-overlay.active{display:flex;flex-direction:column}
+.practice-top{display:flex;align-items:center;padding:calc(16px + var(--safe-top)) 18px 8px;gap:12px}
+.practice-top .title{font-weight:800}.practice-main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px 18px 36px;min-height:620px}
+.phase-name{font-weight:850;letter-spacing:.15em;font-size:14px;color:var(--muted)}
+.countdown{font-size:clamp(54px,11vw,94px);font-weight:850;letter-spacing:-.06em;line-height:1;margin-top:8px;font-variant-numeric:tabular-nums}
+.orb-wrap{width:min(70vw,360px);aspect-ratio:1;display:grid;place-items:center;margin:26px 0;position:relative}
+.orb-ring{position:absolute;inset:0;border-radius:50%;border:1px solid color-mix(in srgb,var(--accent) 25%,var(--line))}
+.orb{width:48%;height:48%;border-radius:50%;background:radial-gradient(circle at 36% 30%,var(--orb2),var(--orb));box-shadow:0 0 70px color-mix(in srgb,var(--accent) 25%,transparent);transform:scale(1);will-change:transform}
+.progress-track{width:min(72vw,420px);height:5px;background:var(--panel-2);border-radius:99px;overflow:hidden}.progress-bar{height:100%;background:var(--accent);width:0}
+.practice-meta{display:flex;gap:22px;margin-top:18px;justify-content:center;flex-wrap:wrap}.practice-meta div{min-width:90px}.practice-meta strong{display:block;font-size:20px}.practice-meta span{font-size:12px;color:var(--muted)}
+.next{margin-top:14px;color:var(--muted);font-size:13px}
+.practice-actions{display:flex;gap:10px;margin-top:26px}
+.practice-actions .btn{min-width:120px}
+.sr-live{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.summary-modal{text-align:center}.summary-number{font-size:72px;font-weight:850;letter-spacing:-.06em;line-height:1}.delta{margin-top:16px;padding:14px;border-radius:14px;background:var(--panel-2)}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.stats-grid .kpi{min-height:92px}
+.spark{display:flex;align-items:flex-end;gap:8px;height:130px;padding-top:14px}.bar{flex:1;background:var(--accent);min-height:2px;border-radius:6px 6px 2px 2px;opacity:.8;position:relative}.bar span{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--muted)}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.setting{padding:16px;background:var(--panel);border:1px solid var(--line);border-radius:14px}.setting h3{font-size:15px;margin:0 0 8px}.setting p{font-size:12px;color:var(--muted);margin:0 0 12px}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.switch{position:relative;width:48px;height:28px}.switch input{position:absolute;opacity:0}.slider{position:absolute;inset:0;background:var(--line);border-radius:99px}.slider:after{content:"";position:absolute;width:22px;height:22px;left:3px;top:3px;border-radius:50%;background:white;transition:.2s}.switch input:checked + .slider{background:var(--accent)}.switch input:checked + .slider:after{transform:translateX(20px)}
+.footer-note{font-size:12px;color:var(--muted);text-align:center;padding:24px 0}
+.toast{position:fixed;z-index:200;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--bg);padding:10px 14px;border-radius:12px;font-weight:700;font-size:13px;opacity:0;pointer-events:none;transition:.2s}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (max-width:820px){.hero{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.stats-grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:560px){
+  .app{padding:0 12px}.grid{grid-template-columns:1fr}.quick-stats{grid-template-columns:repeat(3,1fr);padding:12px}.quick-stats .kpi{padding:11px}.quick-stats .kpi .v{font-size:17px}
+  .history-row{grid-template-columns:1fr 1fr}.history-row .status{grid-column:2}.form-grid,.settings-grid{grid-template-columns:1fr}.phase-row{grid-template-columns:1fr 86px 40px 40px 40px}
+  .nav-btn{min-width:68px;padding:9px 10px;font-size:12px}.practice-main{min-height:560px}.stats-grid{grid-template-columns:repeat(2,1fr)}
+}
+html.reduced-motion *,html.reduced-motion *::before,html.reduced-motion *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand"><span class="brand-mark" aria-hidden="true"></span>BreathOS</div>
+    <span class="tag">offline</span>
+    <div class="spacer"></div>
+    <button class="btn accent" id="installAppBtn" style="display:none;min-height:38px;padding:6px 12px;font-size:13px" aria-label="Install app">Install App</button>
+    <button class="icon-btn" id="quickNew" aria-label="New technique" title="New technique">＋</button>
+  </header>
+
+  <main>
+    <section id="homeView" class="view active">
+      <div class="hero">
+        <div class="panel summary">
+          <div>
+            <div class="eyebrow">Today</div>
+            <div class="big-stat"><span id="todayCycles">0</span> <span style="font-size:.38em;letter-spacing:0">cycles</span></div>
+            <div class="subtle" id="todayCaption">Start a technique and your cycles will appear here.</div>
+          </div>
+        </div>
+        <div class="panel quick-stats">
+          <div class="kpi"><div class="eyebrow">Minutes</div><div class="v" id="todayMinutes">0</div></div>
+          <div class="kpi"><div class="eyebrow">Sessions</div><div class="v" id="todaySessions">0</div></div>
+          <div class="kpi"><div class="eyebrow">Streak</div><div class="v" id="currentStreak">0d</div></div>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <h2>Techniques</h2><div class="spacer"></div>
+        <button class="btn" id="newTechniqueBtn">+ New</button>
+      </div>
+      <div class="controls">
+        <input class="search" id="searchInput" type="search" placeholder="Search techniques" aria-label="Search techniques">
+        <select id="sortSelect" aria-label="Sort techniques">
+          <option value="default">Favorites & recent</option>
+          <option value="cycles">Most cycles</option>
+          <option value="recent">Most recent</option>
+          <option value="alpha">Alphabetical</option>
+        </select>
+      </div>
+      <div id="techniqueGrid" class="grid" style="margin-top:14px"></div>
+    </section>
+
+    <section id="historyView" class="view">
+      <div class="section-head"><h2>History</h2></div>
+      <div class="controls">
+        <select id="historyTechnique" aria-label="Filter by technique"><option value="">All techniques</option></select>
+        <select id="historyStatus" aria-label="Filter by status">
+          <option value="">All statuses</option>
+          <option value="completed_target">Completed target</option>
+          <option value="stopped_early">Stopped early</option>
+          <option value="cancelled_before_cycle">Cancelled before cycle</option>
+          <option value="interrupted">Interrupted</option>
+        </select>
+      </div>
+      <div id="historyList" class="history-list" style="margin-top:14px"></div>
+    </section>
+
+    <section id="insightsView" class="view">
+      <div class="section-head"><h2>Insights</h2></div>
+      <div id="insightCards" class="stats-grid"></div>
+      <div class="panel" style="padding:18px;margin-top:14px">
+        <div class="eyebrow">Last 7 days · completed cycles</div>
+        <div id="sevenDayChart" class="spark" aria-label="Seven-day cycle chart"></div>
+      </div>
+      <div class="section-head"><h2>Technique performance</h2></div>
+      <div id="techniqueStatsList" class="history-list"></div>
+    </section>
+
+    <section id="settingsView" class="view">
+      <div class="section-head"><h2>Settings</h2></div>
+      <div class="settings-grid">
+        <div class="setting">
+          <h3>Appearance</h3><p>Choose a theme. System follows your device.</p>
+          <select id="themeSelect"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select>
+        </div>
+        <div class="setting">
+          <h3>Reduced motion</h3><p>Replace expansion/contraction with a static pacer.</p>
+          <select id="motionSelect"><option value="system">System</option><option value="off">Motion on</option><option value="on">Reduced motion</option></select>
+        </div>
+        <div class="setting"><div class="toggle"><div><h3>Audio cues</h3><p>Soft tones at phase transitions.</p></div><label class="switch"><input id="audioToggle" type="checkbox"><span class="slider"></span></label></div></div>
+        <div class="setting"><div class="toggle"><div><h3>Haptics</h3><p>Short vibration at phase changes when supported.</p></div><label class="switch"><input id="hapticsToggle" type="checkbox"><span class="slider"></span></label></div></div>
+        <div class="setting"><div class="toggle"><div><h3>Pause when hidden</h3><p>Automatically pause if you leave the app/tab.</p></div><label class="switch"><input id="hiddenToggle" type="checkbox"><span class="slider"></span></label></div></div>
+        <div class="setting"><div class="toggle"><div><h3>Keep screen awake</h3><p>Use Wake Lock during practice when supported.</p></div><label class="switch"><input id="wakeToggle" type="checkbox"><span class="slider"></span></label></div></div>
+        <div class="setting">
+          <h3>Start countdown</h3><p>Seconds before the first inhale.</p>
+          <select id="countdownSelect"><option value="0">Off</option><option value="3">3 seconds</option><option value="5">5 seconds</option></select>
+        </div>
+        <div class="setting">
+          <h3>Data</h3><p>Everything is stored locally on this device/browser profile.</p>
+          <div class="controls"><button class="btn" id="exportBtn">Export JSON</button><button class="btn" id="importBtn">Import JSON</button><input id="importFile" type="file" accept="application/json,.json" hidden></div>
+        </div>
+        <div class="setting" style="grid-column:1/-1">
+          <h3>Reset</h3><p>Delete all sessions and custom techniques on this browser.</p>
+          <button class="btn danger" id="resetBtn">Reset all local data</button>
+        </div>
+      </div>
+      <div class="footer-note">Practice comfortably. Stop if you feel dizzy, faint, short of breath, painful, or unwell. This timer is not medical care.</div>
+    </section>
+  </main>
+</div>
+
+<nav class="bottom-nav" aria-label="Primary">
+  <button class="nav-btn active" data-view="home">Home</button>
+  <button class="nav-btn" data-view="history">History</button>
+  <button class="nav-btn" data-view="insights">Insights</button>
+  <button class="nav-btn" data-view="settings">Settings</button>
+</nav>
+
+<dialog id="setupDialog">
+  <div class="modal-head"><h2>Start practice</h2><div class="spacer"></div><button class="icon-btn" data-close="setupDialog" aria-label="Close">×</button></div>
+  <div class="modal-body">
+    <div id="setupTechnique" class="setup-technique"></div>
+    <div class="field"><label>Target mode</label>
+      <div class="segmented" id="targetMode">
+        <button data-mode="cycles" class="active">Cycles</button>
+        <button data-mode="duration">Duration</button>
+        <button data-mode="open">Open-ended</button>
+      </div>
+    </div>
+    <div id="targetPane" class="target-pane"></div>
+    <div id="setupEstimate" class="inline-note" style="margin-top:14px"></div>
+    <div class="inline-note" style="margin-top:10px">Practice comfortably. Stop if you feel dizzy, faint, short of breath, painful, or unwell.</div>
+  </div>
+  <div class="modal-foot"><button class="btn" data-close="setupDialog">Cancel</button><button class="btn accent" id="beginPracticeBtn">Begin</button></div>
+</dialog>
+
+<dialog id="techniqueDialog">
+  <div class="modal-head"><h2 id="techniqueDialogTitle">New technique</h2><div class="spacer"></div><button class="icon-btn" data-close="techniqueDialog" aria-label="Close">×</button></div>
+  <div class="modal-body">
+    <div class="field"><label for="techName">Name</label><input id="techName" type="text" maxlength="60" placeholder="e.g. Focus 4-2-6"></div>
+    <div class="field" style="margin-top:12px"><label for="techDescription">Description</label><input id="techDescription" type="text" maxlength="120" placeholder="Optional note"></div>
+    <div class="section-head" style="margin-top:20px"><h2>Phases</h2><div class="spacer"></div><button class="btn" id="addPhaseBtn">+ Phase</button></div>
+    <div id="phaseList" class="phase-list"></div>
+    <div id="techPreview" class="inline-note"></div>
+    <div id="techWarning" class="inline-note warn-note" style="display:none;margin-top:10px"></div>
+    <div class="form-grid" style="margin-top:14px">
+      <div class="field"><label>Default target mode</label><select id="defaultMode"><option value="cycles">Cycles</option><option value="duration">Duration</option><option value="open">Open-ended</option></select></div>
+      <div class="field"><label>Default target value</label><input id="defaultValue" type="number" min="1" step="1" value="5"></div>
+    </div>
+  </div>
+  <div class="modal-foot"><button class="btn" data-close="techniqueDialog">Cancel</button><button class="btn accent" id="saveTechniqueBtn">Save technique</button></div>
+</dialog>
+
+<dialog id="statsDialog">
+  <div class="modal-head"><h2 id="statsTitle">Technique stats</h2><div class="spacer"></div><button class="icon-btn" data-close="statsDialog" aria-label="Close">×</button></div>
+  <div class="modal-body">
+    <div id="statsPattern" class="subtle"></div>
+    <div id="statsGrid" class="stats-grid" style="margin-top:14px"></div>
+    <div class="section-head"><h2>Recent sessions</h2></div>
+    <div id="statsHistory" class="history-list"></div>
+  </div>
+  <div class="modal-foot"><button class="btn accent" id="statsStartBtn">Start</button><button class="btn" data-close="statsDialog">Close</button></div>
+</dialog>
+
+<dialog id="summaryDialog">
+  <div class="modal-head"><h2>Session summary</h2></div>
+  <div class="modal-body summary-modal">
+    <div class="eyebrow" id="summaryStatus">Session complete</div>
+    <div class="summary-number" id="summaryCycles">0</div>
+    <div class="subtle">completed cycles</div>
+    <div class="stats-grid" style="margin-top:20px">
+      <div class="kpi"><div class="eyebrow">Duration</div><div class="v" id="summaryDuration">0:00</div></div>
+      <div class="kpi"><div class="eyebrow">Target</div><div class="v" id="summaryTarget">—</div></div>
+      <div class="kpi"><div class="eyebrow">Result</div><div class="v" id="summaryResult">—</div></div>
+      <div class="kpi"><div class="eyebrow">Today</div><div class="v" id="summaryToday">0</div></div>
+    </div>
+    <div id="summaryDelta" class="delta"></div>
+  </div>
+  <div class="modal-foot"><button class="btn" id="summaryHomeBtn">Home</button><button class="btn accent" id="summaryAgainBtn">Again</button></div>
+</dialog>
+
+<dialog id="confirmStopDialog">
+  <div class="modal-head"><h2>End this session?</h2></div>
+  <div class="modal-body"><p class="subtle" style="margin:0">Only fully completed cycles will be counted.</p></div>
+  <div class="modal-foot"><button class="btn" id="resumeFromStopBtn">Keep breathing</button><button class="btn danger" id="confirmStopBtn">End session</button></div>
+</dialog>
+
+<dialog id="iosInstallDialog">
+  <div class="modal-head"><h2>Install BreathOS</h2><div class="spacer"></div><button class="icon-btn" data-close="iosInstallDialog" aria-label="Close">×</button></div>
+  <div class="modal-body">
+    <p style="margin:0 0 12px;font-weight:700">Use BreathOS 100% offline from your home screen:</p>
+    <div class="inline-note" style="margin-bottom:10px">1. Tap the <strong>Share</strong> button in Safari's toolbar.</div>
+    <div class="inline-note" style="margin-bottom:10px">2. Scroll down and tap <strong>Add to Home Screen</strong>.</div>
+    <div class="inline-note">3. Tap <strong>Add</strong> in the top right corner.</div>
+  </div>
+  <div class="modal-foot"><button class="btn accent" data-close="iosInstallDialog">Got it</button></div>
+</dialog>
+
+<div id="practiceOverlay" class="practice-overlay" aria-hidden="true">
+  <div class="practice-top">
+    <div class="title" id="practiceTechniqueName"></div>
+    <div class="spacer"></div>
+    <button id="practiceMuteBtn" class="icon-btn" aria-label="Mute or unmute cues" title="Mute / unmute">♪</button>
+  </div>
+  <div class="practice-main">
+    <div id="phaseName" class="phase-name">READY</div>
+    <div id="phaseCountdown" class="countdown">3</div>
+    <div class="orb-wrap">
+      <div class="orb-ring"></div>
+      <div id="breathOrb" class="orb"></div>
+    </div>
+    <div class="progress-track" aria-hidden="true"><div id="phaseProgress" class="progress-bar"></div></div>
+    <div class="practice-meta">
+      <div><strong id="cycleDisplay">0</strong><span>cycles</span></div>
+      <div><strong id="elapsedDisplay">0:00</strong><span>active</span></div>
+      <div><strong id="targetDisplay">—</strong><span>target</span></div>
+    </div>
+    <div id="nextPhase" class="next">Next: —</div>
+    <div class="practice-actions">
+      <button id="pauseBtn" class="btn primary">Pause</button>
+      <button id="stopBtn" class="btn">Stop</button>
+    </div>
+  </div>
+  <div id="ariaLive" class="sr-live" aria-live="polite"></div>
+</div>
+
+<div id="toast" class="toast" role="status"></div>
+
+<script>
+(() => {
+"use strict";
+
+const APP = "BreathOS";
+const SCHEMA_VERSION = 1;
+const DB_NAME = "breathos-db";
+const STORE_KEY = "breathos-fallback-v1";
+
+const $ = (s, root=document) => root.querySelector(s);
+const $$ = (s, root=document) => [...root.querySelectorAll(s)];
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : `id_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`);
+const clamp = (n,a,b)=>Math.min(b,Math.max(a,n));
+const deepClone = o => JSON.parse(JSON.stringify(o));
+const escapeHtml = s => String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const msToClock = ms => {
+  const s = Math.max(0, Math.round(ms/1000)), m=Math.floor(s/60), r=s%60;
+  return `${m}:${String(r).padStart(2,"0")}`;
+};
+const msToHuman = ms => {
+  const s=Math.round(ms/1000);
+  if(s<60) return `${s}s`;
+  const m=Math.floor(s/60), r=s%60;
+  return r?`${m}m ${r}s`:`${m}m`;
+};
+const todayKey = (d=new Date()) => {
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,"0"), day=String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
+};
+const fmtDate = iso => {
+  if(!iso) return "Never";
+  const d=new Date(iso);
+  return d.toLocaleString([], {month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});
+};
+const sum = (arr, fn=x=>x)=>arr.reduce((a,x)=>a+fn(x),0);
+const median = arr => {
+  if(!arr.length) return 0;
+  const a=[...arr].sort((x,y)=>x-y), mid=Math.floor(a.length/2);
+  return a.length%2?a[mid]:(a[mid-1]+a[mid])/2;
+};
+const cycleMs = t => sum(t.phases,p=>p.durationMs);
+const patternText = t => t.phases.map(p=>`${trimNum(p.durationMs/1000)} ${p.type}`).join(" • ");
+const compactPattern = t => t.phases.map(p=>trimNum(p.durationMs/1000)).join(" • ");
+const trimNum = n => Number.isInteger(n)?String(n):n.toFixed(1).replace(/\.0$/,"");
+const cyclesPerMin = t => 60000/cycleMs(t);
+
+const DEFAULTS = [
+  mkDefault("tech_478","4-7-8",[["inhale",4],["hold",7],["exhale",8]],{mode:"cycles",value:4},"Classic 4-7-8 pacing."),
+  mkDefault("tech_box","Box breathing",[["inhale",4],["hold",4],["exhale",4],["hold",4]],{mode:"cycles",value:5},"Balanced four-phase box pattern."),
+  mkDefault("tech_equal","Equal breathing",[["inhale",4],["exhale",4]],{mode:"duration",valueMs:300000},"Simple equal inhale/exhale pacing."),
+  mkDefault("tech_55","Slow 5.5 bpm",[["inhale",5.45],["exhale",5.45]],{mode:"duration",valueMs:300000},"Generic slow-paced breathing around 5.5 cycles/min."),
+  mkDefault("tech_6","Slow 6 bpm",[["inhale",5],["exhale",5]],{mode:"duration",valueMs:300000},"Generic slow-paced breathing at 6 cycles/min."),
+  mkDefault("tech_extended","Extended exhale",[["inhale",4],["exhale",6]],{mode:"duration",valueMs:300000},"Longer exhale than inhale.")
+];
+
+function mkDefault(id,name,parts,target,description){
+  const now="2026-08-11T00:00:00.000Z";
+  return {
+    id, canonicalId:id, version:1, name, description, favorite:false, archived:false, isDefault:true,
+    phases:parts.map(([type,sec],i)=>({id:`${id}_p${i}`,type,durationMs:Math.round(sec*1000)})),
+    createdAt:now, updatedAt:now, defaultTarget:target, cues:{audio:true,haptic:true}
+  };
+}
+
+const DEFAULT_SETTINGS = {
+  theme:"system", reducedMotion:"system", audioEnabled:true, hapticsEnabled:false,
+  startCountdownSeconds:3, pauseWhenHidden:true, keepScreenAwake:true, dataVersion:1
+};
+
+class Store {
+  constructor(){ this.db=null; this.mode="memory"; this.memory={techniques:[],sessions:[],settings:deepClone(DEFAULT_SETTINGS)}; }
+  async init(){
+    try{
+      this.db = await new Promise((resolve,reject)=>{
+        const req=indexedDB.open(DB_NAME,1);
+        req.onupgradeneeded=()=>{
+          const db=req.result;
+          if(!db.objectStoreNames.contains("techniques")) db.createObjectStore("techniques",{keyPath:"id"});
+          if(!db.objectStoreNames.contains("sessions")) db.createObjectStore("sessions",{keyPath:"id"});
+          if(!db.objectStoreNames.contains("settings")) db.createObjectStore("settings",{keyPath:"key"});
+        };
+        req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error);
+      });
+      this.mode="idb";
+      await this.seed();
+    }catch(err){
+      console.warn("IndexedDB unavailable, using localStorage fallback",err);
+      this.mode="local";
+      this.loadLocal();
+      this.seedLocal();
+    }
+  }
+  tx(store,mode="readonly"){ return this.db.transaction(store,mode).objectStore(store); }
+  req(req){ return new Promise((resolve,reject)=>{req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error);});}
+  async getAll(store){
+    if(this.mode==="idb") return await this.req(this.tx(store).getAll());
+    return deepClone(this.memory[store]||[]);
+  }
+  async put(store,val){
+    if(this.mode==="idb") return await this.req(this.tx(store,"readwrite").put(val));
+    if(store==="settings"){ this.memory.settings=deepClone(val.value||val); }
+    else{
+      const arr=this.memory[store]; const i=arr.findIndex(x=>x.id===val.id);
+      if(i>=0) arr[i]=deepClone(val); else arr.push(deepClone(val));
+    }
+    this.saveLocal();
+  }
+  async delete(store,id){
+    if(this.mode==="idb") return await this.req(this.tx(store,"readwrite").delete(id));
+    this.memory[store]=this.memory[store].filter(x=>x.id!==id); this.saveLocal();
+  }
+  async clear(store){
+    if(this.mode==="idb") return await this.req(this.tx(store,"readwrite").clear());
+    this.memory[store]=[]; this.saveLocal();
+  }
+  async getSettings(){
+    if(this.mode==="idb"){
+      const row=await this.req(this.tx("settings").get("app"));
+      return row?.value ? {...DEFAULT_SETTINGS,...row.value} : deepClone(DEFAULT_SETTINGS);
+    }
+    return {...DEFAULT_SETTINGS,...this.memory.settings};
+  }
+  async setSettings(v){
+    if(this.mode==="idb") return await this.put("settings",{key:"app",value:v});
+    this.memory.settings=deepClone(v); this.saveLocal();
+  }
+  async seed(){
+    const existing=await this.getAll("techniques");
+    for(const d of DEFAULTS) if(!existing.some(x=>x.id===d.id)) await this.put("techniques",deepClone(d));
+    const row=await this.req(this.tx("settings").get("app"));
+    if(!row) await this.setSettings(deepClone(DEFAULT_SETTINGS));
+  }
+  loadLocal(){
+    try{
+      const raw=localStorage.getItem(STORE_KEY);
+      if(raw){ const x=JSON.parse(raw); this.memory={techniques:x.techniques||[],sessions:x.sessions||[],settings:{...DEFAULT_SETTINGS,...(x.settings||{})}}; }
+    }catch(e){ console.warn(e); }
+  }
+  seedLocal(){
+    for(const d of DEFAULTS) if(!this.memory.techniques.some(x=>x.id===d.id)) this.memory.techniques.push(deepClone(d));
+    this.saveLocal();
+  }
+  saveLocal(){
+    try{ localStorage.setItem(STORE_KEY,JSON.stringify(this.memory)); }
+    catch(e){ toast("Couldn’t save locally. Export your data before closing."); console.error(e); }
+  }
+}
+
+const store = new Store();
+let techniques=[], sessions=[], settings=deepClone(DEFAULT_SETTINGS);
+let activeTechnique=null, setupMode="cycles", editingTechniqueId=null, currentStatsTechniqueId=null;
+let practice=null, rafId=0, wakeLock=null, audioCtx=null, userMuted=false, hiddenPause=false;
+
+function phaseLabel(type){ return ({inhale:"INHALE",hold:"HOLD",exhale:"EXHALE",rest:"REST"})[type]||type.toUpperCase(); }
+
+function toast(msg){
+  const el=$("#toast"); el.textContent=msg; el.classList.add("show");
+  clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove("show"),2200);
+}
+
+async function reload(){
+  techniques=(await store.getAll("techniques")).filter(t=>!t.archived);
+  sessions=await store.getAll("sessions");
+  settings=await store.getSettings();
+  applySettings();
+  renderAll();
+}
+
+function applySettings(){
+  document.documentElement.dataset.theme=settings.theme;
+  $("#themeSelect").value=settings.theme;
+  $("#motionSelect").value=settings.reducedMotion;
+  $("#audioToggle").checked=settings.audioEnabled;
+  $("#hapticsToggle").checked=settings.hapticsEnabled;
+  $("#hiddenToggle").checked=settings.pauseWhenHidden;
+  $("#wakeToggle").checked=settings.keepScreenAwake;
+  $("#countdownSelect").value=String(settings.startCountdownSeconds);
+  const sysReduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reduced=settings.reducedMotion==="on" || (settings.reducedMotion==="system"&&sysReduced);
+  document.documentElement.classList.toggle("reduced-motion",reduced);
+}
+
+function statsForTechnique(id){
+  const ss=sessions.filter(s=>s.techniqueId===id);
+  const valid=ss.filter(s=>!(s.completedCycles===0 && s.activeElapsedMs<3000));
+  const lifetime=sum(ss,s=>s.completedCycles);
+  const today=sum(ss.filter(s=>s.localDate===todayKey()),s=>s.completedCycles);
+  const totalTime=sum(ss,s=>s.activeElapsedMs||0);
+  const last=ss.slice().sort((a,b)=>new Date(b.startedAt)-new Date(a.startedAt))[0];
+  const completed=ss.filter(s=>s.result==="completed_target").length;
+  const avg=valid.length?lifetime/valid.length:0;
+  const med=median(valid.map(s=>s.completedCycles));
+  return {ss,valid,lifetime,today,totalTime,last,sessions:ss.length,completed,avg,med};
+}
+
+function globalStats(){
+  const td=todayKey(), todayS=sessions.filter(s=>s.localDate===td);
+  const cycles=sum(todayS,s=>s.completedCycles), time=sum(todayS,s=>s.activeElapsedMs||0);
+  const days=new Set(sessions.filter(s=>s.completedCycles>0).map(s=>s.localDate));
+  let streak=0; const d=new Date();
+  while(days.has(todayKey(d))){ streak++; d.setDate(d.getDate()-1); }
+  return {cycles,time,sessions:todayS.length,streak};
+}
+
+function renderAll(){
+  renderHome(); renderHistory(); renderInsights(); renderHistoryFilter();
+}
+
+function renderHome(){
+  const g=globalStats();
+  $("#todayCycles").textContent=g.cycles;
+  $("#todayMinutes").textContent=Math.round(g.time/60000);
+  $("#todaySessions").textContent=g.sessions;
+  $("#currentStreak").textContent=`${g.streak}d`;
+  $("#todayCaption").textContent=g.cycles ? `${msToHuman(g.time)} active practice across ${g.sessions} session${g.sessions===1?"":"s"}.` : "Start a technique and your cycles will appear here.";
+
+  const q=$("#searchInput").value.trim().toLowerCase(), sort=$("#sortSelect").value;
+  let arr=techniques.filter(t=>t.name.toLowerCase().includes(q)||patternText(t).toLowerCase().includes(q));
+  arr.sort((a,b)=>{
+    const A=statsForTechnique(a.id), B=statsForTechnique(b.id);
+    if(sort==="cycles") return B.lifetime-A.lifetime || a.name.localeCompare(b.name);
+    if(sort==="recent") return (new Date(B.last?.startedAt||0))-(new Date(A.last?.startedAt||0));
+    if(sort==="alpha") return a.name.localeCompare(b.name);
+    return Number(b.favorite)-Number(a.favorite) || (new Date(B.last?.startedAt||0))-(new Date(A.last?.startedAt||0)) || a.name.localeCompare(b.name);
+  });
+  const grid=$("#techniqueGrid");
+  if(!arr.length){ grid.innerHTML='<div class="panel empty" style="grid-column:1/-1">No techniques match your search.</div>'; return; }
+  grid.innerHTML=arr.map(t=>{
+    const st=statsForTechnique(t.id), bpm=cyclesPerMin(t);
+    return `<article class="card" data-id="${escapeHtml(t.id)}">
+      <div class="card-top">
+        <div><div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap"><h3>${escapeHtml(t.name)}</h3>${t.isDefault?'<span class="tag">preset</span>':'<span class="tag">custom</span>'}</div>
+        <div class="pattern">${escapeHtml(patternText(t))}<br>${bpm<15?`${bpm.toFixed(1)} cycles/min · `:""}${msToHuman(cycleMs(t))}/cycle</div></div>
+        <div class="spacer"></div><button class="star ${t.favorite?"on":""}" data-action="favorite" aria-label="${t.favorite?"Unfavorite":"Favorite"}">${t.favorite?"★":"☆"}</button>
+      </div>
+      <div class="card-kpis">
+        <div><strong>${st.lifetime}</strong><span>lifetime cycles</span></div>
+        <div><strong>${st.today}</strong><span>today</span></div>
+        <div><strong>${st.sessions}</strong><span>sessions</span></div>
+      </div>
+      <div class="card-actions">
+        <button class="btn" data-action="stats">Stats</button>
+        <button class="btn primary" data-action="start">Start</button>
+        <button class="icon-btn" data-action="more" aria-label="${t.isDefault?"Clone":"Edit"}">${t.isDefault?"⧉":"✎"}</button>
+      </div>
+    </article>`;
+  }).join("");
+}
+
+function renderHistoryFilter(){
+  const sel=$("#historyTechnique"), current=sel.value;
+  sel.innerHTML='<option value="">All techniques</option>'+techniques.map(t=>`<option value="${escapeHtml(t.id)}">${escapeHtml(t.name)}</option>`).join("");
+  if([...sel.options].some(o=>o.value===current)) sel.value=current;
+}
+
+function renderHistory(){
+  const tid=$("#historyTechnique").value, status=$("#historyStatus").value;
+  let ss=sessions.slice().sort((a,b)=>new Date(b.startedAt)-new Date(a.startedAt));
+  if(tid) ss=ss.filter(s=>s.techniqueId===tid);
+  if(status) ss=ss.filter(s=>s.result===status);
+  const el=$("#historyList");
+  if(!ss.length){ el.innerHTML='<div class="panel empty">No sessions match this view.</div>'; return; }
+  el.innerHTML=ss.slice(0,200).map(s=>sessionRow(s)).join("");
+}
+
+function sessionRow(s){
+  const name=s.techniqueSnapshot?.name || techniques.find(t=>t.id===s.techniqueId)?.name || "Unknown technique";
+  const good=s.result==="completed_target";
+  const label=({completed_target:"Completed",stopped_early:"Stopped early",cancelled_before_cycle:"No full cycle",interrupted:"Interrupted"})[s.result]||s.result;
+  return `<div class="history-row">
+    <div><div class="name">${escapeHtml(name)}</div><small>${fmtDate(s.startedAt)}</small></div>
+    <div><strong>${s.completedCycles}</strong><br><small>cycles</small></div>
+    <div><strong>${msToHuman(s.activeElapsedMs||0)}</strong><br><small>active</small></div>
+    <div class="status ${good?"good":"warn"}">${escapeHtml(label)}</div>
+  </div>`;
+}
+
+function renderInsights(){
+  const totalCycles=sum(sessions,s=>s.completedCycles), totalTime=sum(sessions,s=>s.activeElapsedMs||0), days=new Set(sessions.filter(s=>s.completedCycles>0).map(s=>s.localDate)).size;
+  const completed=sessions.filter(s=>s.result==="completed_target").length;
+  const rate=sessions.length?Math.round(completed/sessions.length*100):0;
+  $("#insightCards").innerHTML=[
+    ["Lifetime cycles",totalCycles],["Practice time",msToHuman(totalTime)],["Practice days",days],["Target completion",`${rate}%`]
+  ].map(([k,v])=>`<div class="kpi"><div class="eyebrow">${k}</div><div class="v">${v}</div></div>`).join("");
+
+  const chart=$("#sevenDayChart"), now=new Date(), data=[];
+  for(let i=6;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);const key=todayKey(d);data.push({key,label:d.toLocaleDateString([],{weekday:"short"}),v:sum(sessions.filter(s=>s.localDate===key),s=>s.completedCycles)});}
+  const max=Math.max(1,...data.map(d=>d.v));
+  chart.innerHTML=data.map(d=>`<div class="bar" style="height:${Math.max(2,d.v/max*100)}%" title="${d.label}: ${d.v} cycles"><span>${escapeHtml(d.label.slice(0,1))}</span></div>`).join("");
+
+  const stats=techniques.map(t=>({t,s:statsForTechnique(t.id)})).sort((a,b)=>b.s.lifetime-a.s.lifetime);
+  $("#techniqueStatsList").innerHTML=stats.length?stats.map(({t,s})=>`<button class="history-row" data-stats-id="${escapeHtml(t.id)}" style="width:100%;text-align:left;color:inherit">
+    <div><div class="name">${escapeHtml(t.name)}</div><small>${escapeHtml(compactPattern(t))}</small></div>
+    <div><strong>${s.lifetime}</strong><br><small>cycles</small></div>
+    <div><strong>${s.sessions}</strong><br><small>sessions</small></div>
+    <div><strong>${msToHuman(s.totalTime)}</strong><br><small>time</small></div>
+  </button>`).join(""):'<div class="panel empty">No data yet.</div>';
+}
+
+function openSetup(id){
+  activeTechnique=techniques.find(t=>t.id===id); if(!activeTechnique) return;
+  const t=activeTechnique;
+  $("#setupTechnique").innerHTML=`<div><strong>${escapeHtml(t.name)}</strong><div class="subtle" style="font-size:13px;margin-top:3px">${escapeHtml(patternText(t))}</div></div><div class="spacer"></div><span class="tag">${trimNum(cycleMs(t)/1000)}s cycle</span>`;
+  setupMode=t.defaultTarget?.mode||"cycles";
+  $$("#targetMode button").forEach(b=>b.classList.toggle("active",b.dataset.mode===setupMode));
+  renderTargetPane();
+  $("#setupDialog").showModal();
+}
+
+function renderTargetPane(){
+  const t=activeTechnique, pane=$("#targetPane");
+  if(setupMode==="cycles"){
+    const v=t.defaultTarget?.mode==="cycles"?t.defaultTarget.value:5;
+    pane.innerHTML=`<div class="field"><label>Cycles</label><input id="targetCyclesInput" type="number" min="1" max="999" step="1" value="${v}"></div>`;
+  }else if(setupMode==="duration"){
+    const mins=t.defaultTarget?.mode==="duration"?Math.max(1,Math.round(t.defaultTarget.valueMs/60000)):5;
+    pane.innerHTML=`<div class="field"><label>Minutes</label><input id="targetMinutesInput" type="number" min="1" max="180" step="1" value="${mins}"></div>`;
+  }else pane.innerHTML='<div class="inline-note">No target. The session continues until you stop it.</div>';
+  updateEstimate();
+  pane.querySelector("input")?.addEventListener("input",updateEstimate);
+}
+function updateEstimate(){
+  if(!activeTechnique)return;
+  let text="";
+  if(setupMode==="cycles"){const n=Math.max(1,+($("#targetCyclesInput")?.value||1));text=`Estimated practice: ${msToHuman(n*cycleMs(activeTechnique))}.`;}
+  else if(setupMode==="duration"){const m=Math.max(1,+($("#targetMinutesInput")?.value||1));text=`About ${(m*60000/cycleMs(activeTechnique)).toFixed(1)} cycles in ${m} minute${m===1?"":"s"}.`;}
+  else text=`Each full cycle is ${msToHuman(cycleMs(activeTechnique))}.`;
+  $("#setupEstimate").textContent=text;
+}
+
+function openTechniqueEditor(t=null){
+  editingTechniqueId=t?.id||null;
+  $("#techniqueDialogTitle").textContent=t ? (t.isDefault?"Clone technique":"Edit technique") : "New technique";
+  $("#techName").value=t ? (t.isDefault?`${t.name} copy`:t.name) : "";
+  $("#techDescription").value=t?.description||"";
+  const phases=t?deepClone(t.phases):[{id:uid(),type:"inhale",durationMs:4000},{id:uid(),type:"exhale",durationMs:6000}];
+  $("#phaseList").dataset.phases=JSON.stringify(phases);
+  const target=t?.defaultTarget||{mode:"cycles",value:5};
+  $("#defaultMode").value=target.mode;
+  $("#defaultValue").value=target.mode==="duration"?Math.round(target.valueMs/60000):(target.value||5);
+  syncDefaultValueState();
+  renderPhaseEditor();
+  $("#techniqueDialog").showModal();
+  setTimeout(()=>$("#techName").focus(),50);
+}
+
+function getEditorPhases(){
+  try{return JSON.parse($("#phaseList").dataset.phases||"[]");}catch{return[]}
+}
+function setEditorPhases(p){$("#phaseList").dataset.phases=JSON.stringify(p);renderPhaseEditor();}
+function renderPhaseEditor(){
+  const phases=getEditorPhases();
+  $("#phaseList").innerHTML=phases.map((p,i)=>`<div class="phase-row" data-index="${i}">
+    <select data-field="type"><option value="inhale" ${p.type==="inhale"?"selected":""}>Inhale</option><option value="hold" ${p.type==="hold"?"selected":""}>Hold</option><option value="exhale" ${p.type==="exhale"?"selected":""}>Exhale</option><option value="rest" ${p.type==="rest"?"selected":""}>Rest</option></select>
+    <input data-field="sec" type="number" min=".5" max="60" step=".1" value="${trimNum(p.durationMs/1000)}" aria-label="Duration seconds">
+    <button class="btn" data-phase-action="up" title="Move up" aria-label="Move phase up">↑</button>
+    <button class="btn" data-phase-action="down" title="Move down" aria-label="Move phase down">↓</button>
+    <button class="btn danger" data-phase-action="delete" title="Delete phase" aria-label="Delete phase">×</button>
+  </div>`).join("");
+  updateEditorPreview();
+}
+function updateEditorPreview(){
+  const phases=getEditorPhases();
+  const total=sum(phases,p=>p.durationMs), bpm=total?60000/total:0;
+  $("#techPreview").textContent=phases.length?`${trimNum(total/1000)}s per cycle${bpm<15?` · ${bpm.toFixed(1)} cycles/min`:""} · ${phases.length} phase${phases.length===1?"":"s"}.`:"Add at least one phase.";
+  const longHold=phases.some(p=>p.type==="hold"&&p.durationMs>30000), fast=total>0&&bpm>20;
+  const warn=$("#techWarning");
+  if(longHold){warn.style.display="block";warn.textContent="This protocol contains a hold longer than 30 seconds. Practice conservatively and stop if you feel unwell.";}
+  else if(fast){warn.style.display="block";warn.textContent="This is a fast cycle rate. Rapid or deep breathing may cause lightheadedness.";}
+  else warn.style.display="none";
+}
+function syncDefaultValueState(){
+  const mode=$("#defaultMode").value, el=$("#defaultValue");
+  el.disabled=mode==="open";
+  el.value=mode==="duration"?(+el.value||5):(+el.value||5);
+}
+
+async function saveTechnique(){
+  const name=$("#techName").value.trim(), phases=getEditorPhases();
+  if(!name){toast("Give the technique a name.");return;}
+  if(!phases.length){toast("Add at least one phase.");return;}
+  if(phases.some(p=>!Number.isFinite(p.durationMs)||p.durationMs<500||p.durationMs>60000)){toast("Each phase must be 0.5–60 seconds.");return;}
+  const duplicate=techniques.find(t=>t.name.toLowerCase()===name.toLowerCase()&&t.id!==editingTechniqueId);
+  if(duplicate && !confirm(`A technique named "${duplicate.name}" already exists. Save anyway?`)) return;
+
+  const old=techniques.find(t=>t.id===editingTechniqueId);
+  const now=new Date().toISOString();
+  const mode=$("#defaultMode").value, raw=Math.max(1,Math.round(+$("#defaultValue").value||5));
+  const defaultTarget=mode==="cycles"?{mode,value:raw}:mode==="duration"?{mode,valueMs:raw*60000}:{mode:"open"};
+  const data={
+    id: old && !old.isDefault ? old.id : uid(),
+    version: old && !old.isDefault ? (old.version||1)+1 : 1,
+    name, description:$("#techDescription").value.trim(), favorite:old?.favorite||false, archived:false, isDefault:false,
+    phases:phases.map(p=>({id:p.id||uid(),type:p.type,durationMs:Math.round(p.durationMs)})),
+    createdAt:old&&!old.isDefault?old.createdAt:now, updatedAt:now, defaultTarget, cues:{audio:true,haptic:true}
+  };
+  await store.put("techniques",data);
+  $("#techniqueDialog").close(); await reload(); toast(old?.isDefault?"Technique cloned.":old?"Technique updated.":"Technique created.");
+}
+
+function openStats(id){
+  currentStatsTechniqueId=id;
+  const t=techniques.find(x=>x.id===id); if(!t)return;
+  const st=statsForTechnique(id), recent=st.ss.slice().sort((a,b)=>new Date(b.startedAt)-new Date(a.startedAt)).slice(0,10);
+  $("#statsTitle").textContent=t.name;
+  $("#statsPattern").textContent=`${patternText(t)} · ${msToHuman(cycleMs(t))}/cycle`;
+  const completion=st.sessions?Math.round(st.completed/st.sessions*100):0;
+  $("#statsGrid").innerHTML=[
+    ["Lifetime cycles",st.lifetime],["Today",st.today],["Sessions",st.sessions],["Total time",msToHuman(st.totalTime)],
+    ["Avg cycles",st.avg.toFixed(1)],["Median cycles",st.med],["Target completion",`${completion}%`],["Last practiced",st.last?fmtDate(st.last.startedAt):"Never"]
+  ].map(([k,v])=>`<div class="kpi"><div class="eyebrow">${escapeHtml(k)}</div><div class="v">${escapeHtml(v)}</div></div>`).join("");
+  $("#statsHistory").innerHTML=recent.length?recent.map(sessionRow).join(""):'<div class="empty">No sessions yet.</div>';
+  $("#statsDialog").showModal();
+}
+
+function targetFromSetup(){
+  if(setupMode==="cycles") return {mode:"cycles",value:clamp(Math.round(+$("#targetCyclesInput").value||1),1,999)};
+  if(setupMode==="duration") return {mode:"duration",valueMs:clamp(Math.round(+$("#targetMinutesInput").value||1),1,180)*60000};
+  return {mode:"open"};
+}
+
+function initAudio(){
+  if(!audioCtx){
+    try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){audioCtx=null;}
+  }
+  if(audioCtx?.state==="suspended") audioCtx.resume().catch(()=>{});
+}
+function tone(kind){
+  if(!settings.audioEnabled||userMuted||!audioCtx)return;
+  const now=audioCtx.currentTime, osc=audioCtx.createOscillator(), gain=audioCtx.createGain();
+  const freq={inhale:420,hold:520,exhale:330,rest:300,complete:620}[kind]||400;
+  osc.frequency.setValueAtTime(freq,now); if(kind==="inhale")osc.frequency.linearRampToValueAtTime(freq*1.18,now+.14); if(kind==="exhale")osc.frequency.linearRampToValueAtTime(freq*.85,now+.14);
+  gain.gain.setValueAtTime(0.0001,now);gain.gain.exponentialRampToValueAtTime(.035,now+.02);gain.gain.exponentialRampToValueAtTime(.0001,now+.20);
+  osc.connect(gain).connect(audioCtx.destination);osc.start(now);osc.stop(now+.22);
+}
+function vibrate(pattern=30){ if(settings.hapticsEnabled&&navigator.vibrate) try{navigator.vibrate(pattern)}catch{} }
+
+async function requestWakeLock(){
+  if(!settings.keepScreenAwake||!navigator.wakeLock)return;
+  try{wakeLock=await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release",()=>{wakeLock=null;});}catch(e){wakeLock=null;}
+}
+async function releaseWakeLock(){ try{await wakeLock?.release();}catch{} wakeLock=null; }
+
+async function startPractice(){
+  initAudio();
+  const target=targetFromSetup(), t=deepClone(activeTechnique), now=new Date();
+  const stBefore=statsForTechnique(t.id).lifetime;
+  practice={
+    id:uid(), technique:t, target, startedAt:now.toISOString(), localDate:todayKey(now),
+    state:settings.startCountdownSeconds>0?"countdown":"running", countdownStartedAt:performance.now(),
+    countdownMs:settings.startCountdownSeconds*1000, phaseIndex:0, phaseStartedAt:null,
+    completedCycles:0, activeElapsedMs:0, activeStartedAt:null, pausedAt:null, pausedTotalMs:0,
+    sessionActiveBase:0, lifetimeBefore:stBefore, result:null
+  };
+  $("#setupDialog").close();
+  $("#practiceOverlay").classList.add("active"); $("#practiceOverlay").setAttribute("aria-hidden","false");
+  $("#practiceTechniqueName").textContent=t.name; userMuted=false; updateMuteIcon();
+  $("#phaseProgress").style.width="0%"; $("#cycleDisplay").textContent="0";
+  $("#targetDisplay").textContent=target.mode==="cycles"?target.value:target.mode==="duration"?msToClock(target.valueMs):"Open";
+  if(practice.state==="running") enterPhase(0,performance.now());
+  else { $("#phaseName").textContent="GET READY"; $("#ariaLive").textContent="Get ready"; }
+  await store.put("sessions",sessionSnapshot("interrupted"));
+  await requestWakeLock();
+  cancelAnimationFrame(rafId); rafId=requestAnimationFrame(tick);
+}
+
+function sessionSnapshot(resultOverride=null){
+  if(!practice)return null;
+  return {
+    id:practice.id, techniqueId:practice.technique.id, techniqueVersion:practice.technique.version,
+    techniqueSnapshot:{name:practice.technique.name,phases:deepClone(practice.technique.phases)},
+    startedAt:practice.startedAt, endedAt:resultOverride&&resultOverride!=="interrupted"?new Date().toISOString():undefined,
+    localDate:practice.localDate, target:deepClone(practice.target), completedCycles:practice.completedCycles,
+    activeElapsedMs:Math.max(0,Math.round(currentActiveElapsed())), pausedMs:Math.max(0,Math.round(practice.pausedTotalMs)),
+    result:resultOverride||practice.result||"interrupted",
+    partial:{cycleIndex:practice.completedCycles+1,phaseIndex:practice.phaseIndex,phaseElapsedMs:practice.state==="running"&&practice.phaseStartedAt!=null?Math.max(0,performance.now()-practice.phaseStartedAt):0}
+  };
+}
+function currentActiveElapsed(now=performance.now()){
+  if(!practice)return 0;
+  let val=practice.sessionActiveBase||0;
+  if(practice.state==="running"&&practice.activeStartedAt!=null) val += now-practice.activeStartedAt;
+  return val;
+}
+function enterPhase(index,now,overshoot=0){
+  practice.phaseIndex=index;
+  practice.phaseStartedAt=now-overshoot;
+  if(practice.activeStartedAt==null) practice.activeStartedAt=now-overshoot;
+  const p=practice.technique.phases[index];
+  $("#phaseName").textContent=phaseLabel(p.type);
+  $("#ariaLive").textContent=phaseLabel(p.type);
+  tone(p.type); vibrate(30);
+}
+function nextPhaseIndex(){return (practice.phaseIndex+1)%practice.technique.phases.length;}
+function targetReached(now){
+  const t=practice.target;
+  if(t.mode==="cycles") return practice.completedCycles>=t.value;
+  if(t.mode==="duration") return currentActiveElapsed(now)>=t.valueMs;
+  return false;
+}
+
+async function commitCheckpoint(){
+  try{ await store.put("sessions",sessionSnapshot("interrupted")); }catch(e){console.error(e);toast("Couldn’t save this session checkpoint.");}
+}
+
+function tick(now){
+  if(!practice){return;}
+  if(practice.state==="countdown"){
+    const elapsed=now-practice.countdownStartedAt, remain=practice.countdownMs-elapsed;
+    if(remain<=0){
+      practice.state="running"; practice.activeStartedAt=now; enterPhase(0,now);
+    }else{
+      $("#phaseCountdown").textContent=Math.ceil(remain/1000);
+      $("#elapsedDisplay").textContent="0:00";
+    }
+  }else if(practice.state==="running"){
+    let p=practice.technique.phases[practice.phaseIndex];
+    let elapsed=now-practice.phaseStartedAt;
+    let guard=0;
+    while(elapsed>=p.durationMs && guard++<200){
+      const overshoot=elapsed-p.durationMs;
+      const wasLast=practice.phaseIndex===practice.technique.phases.length-1;
+      if(wasLast){
+        practice.completedCycles++;
+        $("#cycleDisplay").textContent=String(practice.completedCycles);
+        commitCheckpoint();
+        if(practice.target.mode==="cycles"&&practice.completedCycles>=practice.target.value){ finishSession("completed_target"); return; }
+      }
+      const ni=nextPhaseIndex(); enterPhase(ni,now,overshoot);
+      p=practice.technique.phases[practice.phaseIndex];
+      elapsed=overshoot;
+    }
+    if(practice.target.mode==="duration"&&currentActiveElapsed(now)>=practice.target.valueMs){ finishSession("completed_target"); return; }
+    const progress=clamp(elapsed/p.durationMs,0,1), remaining=Math.max(0,p.durationMs-elapsed);
+    $("#phaseCountdown").textContent=Math.ceil(remaining/1000);
+    $("#phaseProgress").style.width=`${progress*100}%`;
+    renderOrb(p.type,progress);
+    $("#elapsedDisplay").textContent=msToClock(currentActiveElapsed(now));
+    const ni=nextPhaseIndex(), np=practice.technique.phases[ni];
+    $("#nextPhase").textContent=`Next: ${phaseLabel(np.type)} ${trimNum(np.durationMs/1000)}s`;
+  }else if(practice.state==="paused"){
+    $("#phaseName").textContent="PAUSED";
+  }
+  rafId=requestAnimationFrame(tick);
+}
+
+function renderOrb(type,progress){
+  const reduced=document.documentElement.classList.contains("reduced-motion");
+  if(reduced){$("#breathOrb").style.transform="scale(1)";return;}
+  let scale;
+  if(type==="inhale") {
+    scale=.72 + .58*ease(progress);
+  } else if(type==="exhale") {
+    scale=1.30 - .58*ease(progress);
+  } else if(type==="hold") {
+    const phases=practice?.technique?.phases||[];
+    const holdNumber=phases.slice(0,(practice?.phaseIndex||0)+1).filter(p=>p.type==="hold").length;
+    scale=holdNumber>=2 ? .72 : 1.30;
+  } else {
+    scale=.72;
+  }
+  $("#breathOrb").style.transform=`scale(${scale})`;
+}
+function ease(t){ return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2; }
+
+function pausePractice(auto=false){
+  if(!practice||practice.state!=="running")return;
+  const now=performance.now();
+  practice.sessionActiveBase=currentActiveElapsed(now);
+  practice.activeStartedAt=null;
+  practice.pausedAt=now; practice.state="paused";
+  $("#pauseBtn").textContent="Resume"; $("#ariaLive").textContent="Paused";
+  if(auto) hiddenPause=true;
+  releaseWakeLock(); commitCheckpoint();
+}
+function resumePractice(){
+  if(!practice||practice.state!=="paused")return;
+  const now=performance.now(), pauseDur=practice.pausedAt?now-practice.pausedAt:0;
+  practice.pausedTotalMs+=pauseDur;
+  practice.phaseStartedAt+=pauseDur;
+  practice.pausedAt=null; practice.activeStartedAt=now; practice.state="running";
+  $("#pauseBtn").textContent="Pause"; $("#ariaLive").textContent=phaseLabel(practice.technique.phases[practice.phaseIndex].type);
+  requestWakeLock();
+}
+function togglePause(){ if(!practice)return; practice.state==="running"?pausePractice(false):practice.state==="paused"?resumePractice():null; }
+
+async function finishSession(result){
+  if(!practice)return;
+  const p=practice;
+  p.sessionActiveBase=currentActiveElapsed();
+  p.activeStartedAt=null; p.result=result; p.state="done";
+  cancelAnimationFrame(rafId); releaseWakeLock(); tone("complete"); vibrate([30,40,30]);
+  const snap=sessionSnapshot(result);
+  await store.put("sessions",snap);
+  $("#practiceOverlay").classList.remove("active"); $("#practiceOverlay").setAttribute("aria-hidden","true");
+  sessions=await store.getAll("sessions");
+  renderAll();
+  showSummary(p,snap);
+  practice=null;
+}
+function showSummary(p,snap){
+  const t=p.technique, st=statsForTechnique(t.id), after=st.lifetime;
+  $("#summaryStatus").textContent=snap.result==="completed_target"?"Session complete":snap.result==="stopped_early"?"Session ended":"Session saved";
+  $("#summaryCycles").textContent=snap.completedCycles;
+  $("#summaryDuration").textContent=msToClock(snap.activeElapsedMs);
+  let target="Open";
+  if(snap.target.mode==="cycles") target=`${snap.target.value} cy`;
+  if(snap.target.mode==="duration") target=msToClock(snap.target.valueMs);
+  $("#summaryTarget").textContent=target;
+  let completion=0;
+  if(snap.target.mode==="cycles") completion=Math.min(100,Math.round(snap.completedCycles/snap.target.value*100));
+  else if(snap.target.mode==="duration") completion=Math.min(100,Math.round(snap.activeElapsedMs/snap.target.valueMs*100));
+  $("#summaryResult").textContent=snap.target.mode==="open"?"Open":`${completion}%`;
+  $("#summaryToday").textContent=st.today;
+  $("#summaryDelta").innerHTML=`<strong>${escapeHtml(t.name)} lifetime</strong><br><span class="subtle">${p.lifetimeBefore} → ${after} cycles</span>`;
+  $("#summaryDialog").dataset.techniqueId=t.id;
+  $("#summaryDialog").showModal();
+}
+
+function openStopConfirm(){
+  if(!practice)return;
+  if(practice.state==="running") pausePractice(false);
+  $("#confirmStopDialog").showModal();
+}
+
+function updateMuteIcon(){ $("#practiceMuteBtn").textContent=userMuted?"∅":"♪"; $("#practiceMuteBtn").title=userMuted?"Unmute cues":"Mute cues"; }
+
+async function toggleFavorite(t){
+  const x=deepClone(t);x.favorite=!x.favorite;x.updatedAt=new Date().toISOString();await store.put("techniques",x);await reload();
+}
+
+async function archiveTechnique(t){
+  if(t.isDefault){toast("Presets can be cloned, not deleted.");return;}
+  const st=statsForTechnique(t.id);
+  const msg=st.sessions?`Archive "${t.name}"? Its ${st.sessions} historical session${st.sessions===1?"":"s"} will remain in history.`:`Delete "${t.name}"?`;
+  if(!confirm(msg))return;
+  const x=deepClone(t);x.archived=true;x.updatedAt=new Date().toISOString();await store.put("techniques",x);await reload();toast("Technique archived.");
+}
+
+async function exportData(){
+  const allTech=await store.getAll("techniques"), allSessions=await store.getAll("sessions"), s=await store.getSettings();
+  const payload={app:APP,schemaVersion:SCHEMA_VERSION,exportedAt:new Date().toISOString(),techniques:allTech,sessions:allSessions,settings:s};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`BreathOS-backup-${todayKey()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function validateImport(x){
+  if(!x||x.app!==APP||x.schemaVersion!==1||!Array.isArray(x.techniques)||!Array.isArray(x.sessions)||typeof x.settings!=="object") return false;
+  return x.techniques.every(t=>t&&typeof t.id==="string"&&typeof t.name==="string"&&Array.isArray(t.phases)&&t.phases.every(p=>["inhale","hold","exhale","rest"].includes(p.type)&&Number.isFinite(p.durationMs)&&p.durationMs>=500&&p.durationMs<=60000))
+    && x.sessions.every(s=>s&&typeof s.id==="string"&&typeof s.techniqueId==="string"&&Number.isInteger(s.completedCycles)&&s.completedCycles>=0);
+}
+async function importData(file){
+  try{
+    const x=JSON.parse(await file.text());
+    if(!validateImport(x)){toast("This import file isn’t a valid BreathOS backup.");return;}
+    const replace=confirm(`Import ${x.techniques.length} techniques and ${x.sessions.length} sessions?\n\nOK = merge with current data\nCancel = stop import`);
+    if(!replace)return;
+    const currentT=await store.getAll("techniques"), currentS=await store.getAll("sessions");
+    const tm=new Map(currentT.map(v=>[v.id,v]));x.techniques.forEach(v=>tm.set(v.id,v));
+    const sm=new Map(currentS.map(v=>[v.id,v]));x.sessions.forEach(v=>sm.set(v.id,v));
+    await store.clear("techniques");await store.clear("sessions");
+    for(const v of tm.values()) await store.put("techniques",v);
+    for(const v of sm.values()) await store.put("sessions",v);
+    await store.setSettings({...DEFAULT_SETTINGS,...x.settings});
+    await reload();toast("Import complete.");
+  }catch(e){console.error(e);toast("Couldn’t import that file.");}
+}
+async function resetAll(){
+  if(!confirm("Delete all sessions and custom techniques from this browser? This cannot be undone unless you exported a backup."))return;
+  await store.clear("sessions");await store.clear("techniques");
+  for(const d of DEFAULTS) await store.put("techniques",deepClone(d));
+  await store.setSettings(deepClone(DEFAULT_SETTINGS));
+  await reload();toast("Local data reset.");
+}
+
+function showView(name){
+  $$(".view").forEach(v=>v.classList.remove("active"));
+  $(`#${name}View`).classList.add("active");
+  $$(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.view===name));
+  if(name==="history")renderHistory();
+  if(name==="insights")renderInsights();
+  window.scrollTo({top:0,behavior:document.documentElement.classList.contains("reduced-motion")?"auto":"smooth"});
+}
+
+function wire(){
+  $$(".nav-btn").forEach(b=>b.addEventListener("click",()=>showView(b.dataset.view)));
+  $$("[data-close]").forEach(b=>b.addEventListener("click",()=>document.getElementById(b.dataset.close).close()));
+  $("#quickNew").onclick=$("#newTechniqueBtn").onclick=()=>openTechniqueEditor();
+  $("#searchInput").oninput=renderHome; $("#sortSelect").onchange=renderHome;
+  $("#historyTechnique").onchange=renderHistory; $("#historyStatus").onchange=renderHistory;
+
+  $("#techniqueGrid").addEventListener("click",e=>{
+    const btn=e.target.closest("[data-action]");if(!btn)return;
+    const card=btn.closest("[data-id]"), t=techniques.find(x=>x.id===card.dataset.id);if(!t)return;
+    const a=btn.dataset.action;
+    if(a==="start")openSetup(t.id); else if(a==="stats")openStats(t.id); else if(a==="favorite")toggleFavorite(t); else if(a==="more"){ if(t.isDefault)openTechniqueEditor(t); else { const choice=prompt(`Type "edit" to edit or "delete" to archive ${t.name}:`,"edit"); if(choice?.toLowerCase()==="delete")archiveTechnique(t); else if(choice!==null)openTechniqueEditor(t); } }
+  });
+  $("#techniqueStatsList").addEventListener("click",e=>{const row=e.target.closest("[data-stats-id]");if(row)openStats(row.dataset.statsId);});
+  $("#statsStartBtn").onclick=()=>{const id=currentStatsTechniqueId;$("#statsDialog").close();openSetup(id);};
+
+  $$("#targetMode button").forEach(b=>b.onclick=()=>{setupMode=b.dataset.mode;$$("#targetMode button").forEach(x=>x.classList.toggle("active",x===b));renderTargetPane();});
+  $("#beginPracticeBtn").onclick=startPractice;
+
+  $("#addPhaseBtn").onclick=()=>{const p=getEditorPhases();p.push({id:uid(),type:"hold",durationMs:4000});setEditorPhases(p);};
+  $("#phaseList").addEventListener("change",e=>{
+    const row=e.target.closest(".phase-row");if(!row)return;const i=+row.dataset.index,p=getEditorPhases();
+    if(e.target.dataset.field==="type")p[i].type=e.target.value;
+    if(e.target.dataset.field==="sec")p[i].durationMs=Math.round(clamp(+e.target.value||.5,.5,60)*1000);
+    setEditorPhases(p);
+  });
+  $("#phaseList").addEventListener("click",e=>{
+    const b=e.target.closest("[data-phase-action]");if(!b)return;const row=b.closest(".phase-row"),i=+row.dataset.index,p=getEditorPhases(),a=b.dataset.phaseAction;
+    if(a==="delete"){if(p.length===1){toast("A technique needs at least one phase.");return;}p.splice(i,1);}
+    if(a==="up"&&i>0)[p[i-1],p[i]]=[p[i],p[i-1]];
+    if(a==="down"&&i<p.length-1)[p[i+1],p[i]]=[p[i],p[i+1]];
+    setEditorPhases(p);
+  });
+  $("#defaultMode").onchange=syncDefaultValueState;
+  $("#saveTechniqueBtn").onclick=saveTechnique;
+
+  $("#pauseBtn").onclick=togglePause; $("#stopBtn").onclick=openStopConfirm;
+  $("#resumeFromStopBtn").onclick=()=>{$("#confirmStopDialog").close();resumePractice();};
+  $("#confirmStopBtn").onclick=()=>{$("#confirmStopDialog").close();finishSession(practice.completedCycles?"stopped_early":"cancelled_before_cycle");};
+  $("#practiceMuteBtn").onclick=()=>{userMuted=!userMuted;updateMuteIcon();};
+
+  $("#summaryHomeBtn").onclick=()=>{$("#summaryDialog").close();showView("home");};
+  $("#summaryAgainBtn").onclick=()=>{const id=$("#summaryDialog").dataset.techniqueId;$("#summaryDialog").close();openSetup(id);};
+
+  $("#themeSelect").onchange=saveSettingUI;
+  $("#motionSelect").onchange=saveSettingUI;
+  $("#audioToggle").onchange=saveSettingUI;
+  $("#hapticsToggle").onchange=saveSettingUI;
+  $("#hiddenToggle").onchange=saveSettingUI;
+  $("#wakeToggle").onchange=saveSettingUI;
+  $("#countdownSelect").onchange=saveSettingUI;
+  $("#exportBtn").onclick=exportData; $("#importBtn").onclick=()=>$("#importFile").click();
+  $("#importFile").onchange=e=>{if(e.target.files[0])importData(e.target.files[0]);e.target.value="";};
+  $("#resetBtn").onclick=resetAll;
+
+  document.addEventListener("visibilitychange",()=>{
+    if(document.hidden && practice?.state==="running" && settings.pauseWhenHidden) pausePractice(true);
+    else if(!document.hidden && hiddenPause && practice?.state==="paused"){ hiddenPause=false; }
+    if(!document.hidden && practice?.state==="running") requestWakeLock();
+  });
+
+  document.addEventListener("keydown",e=>{
+    if(!practice)return;
+    if(e.key===" "){e.preventDefault();togglePause();}
+    else if(e.key==="Escape"){e.preventDefault();openStopConfirm();}
+    else if(e.key.toLowerCase()==="m"){userMuted=!userMuted;updateMuteIcon();}
+  });
+  matchMedia("(prefers-reduced-motion: reduce)").addEventListener?.("change",applySettings);
+}
+
+async function saveSettingUI(){
+  settings={
+    ...settings,
+    theme:$("#themeSelect").value,reducedMotion:$("#motionSelect").value,
+    audioEnabled:$("#audioToggle").checked,hapticsEnabled:$("#hapticsToggle").checked,
+    pauseWhenHidden:$("#hiddenToggle").checked,keepScreenAwake:$("#wakeToggle").checked,
+    startCountdownSeconds:+$("#countdownSelect").value
+  };
+  await store.setSettings(settings);applySettings();
+}
+
+(async function boot(){
+  wire();
+  await store.init();
+  await reload();
+})();
+
+// PWA Service Worker & Zero-Friction Install Prompt
+let deferredInstallPrompt = null;
+const installBtn = document.getElementById("installAppBtn");
+const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+if (!isStandalone && installBtn) {
+  if (isIOS) {
+    installBtn.style.display = "inline-flex";
+    installBtn.style.alignItems = "center";
+  }
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    installBtn.style.display = "inline-flex";
+    installBtn.style.alignItems = "center";
+  });
+  installBtn.addEventListener("click", async () => {
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      const { outcome } = await deferredInstallPrompt.userChoice;
+      if (outcome === "accepted") {
+        installBtn.style.display = "none";
+      }
+      deferredInstallPrompt = null;
+    } else if (isIOS) {
+      document.getElementById("iosInstallDialog")?.showModal();
+    }
+  });
+}
+window.addEventListener("appinstalled", () => {
+  if (installBtn) installBtn.style.display = "none";
+  deferredInstallPrompt = null;
+  toast("BreathOS installed for offline use.");
+});
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch((err) => console.warn("SW error:", err));
+  });
+}
+})();
+</script>
+</body>
+</html>
